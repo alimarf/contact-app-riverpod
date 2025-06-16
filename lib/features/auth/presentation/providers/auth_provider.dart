@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/providers/shared_preferences_provider.dart';
 import '../../../contacts/presentation/providers/contact_provider.dart';
 import '../../domain/entities/auth_entity.dart';
@@ -61,7 +62,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository repository;
   final Ref ref;
 
-  AuthNotifier({required this.repository, required this.ref}) : super(AuthState.initial());
+  AuthNotifier({required this.repository, required this.ref})
+      : super(AuthState.initial());
 
   Future<void> signup({
     required String name,
@@ -69,55 +71,91 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final user = await repository.signup(
-        name: name,
-        email: email,
-        password: password,
-      );
-      final authService = ref.read(authServiceProvider);
-      await authService.saveToken(user.token);
-      state = state.copyWith(isLoading: false, user: user);
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-        user: null,
-      );
-      log(e.toString());
-    }
+    final result = await repository.signup(
+      name: name,
+      email: email,
+      password: password,
+    );
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          error: failure.toString(),
+          user: null,
+        );
+      },
+      (user) async {
+        final authService = ref.read(authServiceProvider);
+        await authService.saveToken(user.token);
+        state = state.copyWith(isLoading: false, user: user);
+      },
+    );
   }
 
-  Future<void> login({
+  // Future<void> login({
+  //   required String email,
+  //   required String password,
+  // }) async {
+  //   state = state.copyWith(isLoading: true, error: null);
+  //   final result = await repository.login(
+  //     email: email,
+  //     password: password,
+  //   );
+  //   result.fold(
+  //     (failure) {
+  //       state = state.copyWith(
+  //         isLoading: false,
+  //         error: failure.toString(),
+  //         user: null,
+  //       );
+  //     },
+  //     (user) async {
+  //       final authService = ref.read(authServiceProvider);
+  //       await authService.saveToken(user.token);
+  //       state = state.copyWith(isLoading: false, user: user);
+  //     },
+  //   );
+  // }
+
+  Future<bool> login({
     required String email,
     required String password,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    try {
-      final user = await repository.login(
-        email: email,
-        password: password,
-      );
-      final authService = ref.read(authServiceProvider);
-      print('AuthNotifier: Saving token after login: ${user.token}');
-      await authService.saveToken(user.token);
-      // Print all SharedPreferences keys/values
-      final prefs = await SharedPreferences.getInstance();
-      print('All SharedPreferences after login:');
-      for (var key in prefs.getKeys()) {
-        print('[33m$key: ${prefs.get(key)}[0m');
-      }
-      state = state.copyWith(isLoading: false, user: user);
-    } catch (e) {
-      final authService = ref.read(authServiceProvider);
-      await authService.removeToken(); // Clear token on error
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-        user: null,
-      );
-      log(e.toString());
-    }
+    final result = await repository.login(
+      email: email,
+      password: password,
+    );
+    return await result.fold(
+      (failure) {
+        
+
+        String errorMessage = 'Something went wrong';
+
+        if (failure is ServerFailure) {
+          errorMessage = failure.message;
+        } else if (failure is NetworkFailure) {
+          errorMessage = 'No internet connection';
+        } else if (failure is UnauthorizedFailure) {
+          errorMessage = 'Unauthorized';
+        }
+
+        log(errorMessage);
+
+        state = state.copyWith(
+          isLoading: false,
+          error: errorMessage,
+          user: null,
+        );
+        return false;
+      },
+      (user) async {
+        final authService = ref.read(authServiceProvider);
+        await authService.saveToken(user.token);
+        state = state.copyWith(isLoading: false, user: user);
+        return true;
+      },
+    );
   }
 
   Future<void> logout() async {
@@ -132,4 +170,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return AuthNotifier(repository: repository, ref: ref);
-}); 
+});

@@ -14,10 +14,6 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-ContactModel _$ContactModelFromJson(Map<String, dynamic> json) {
-  return _ContactModel.fromJson(json);
-}
-
 /// @nodoc
 mixin _$ContactModel {
   String get id => throw _privateConstructorUsedError;
@@ -29,7 +25,6 @@ mixin _$ContactModel {
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $ContactModelCopyWith<ContactModel> get copyWith =>
       throw _privateConstructorUsedError;
@@ -188,7 +183,7 @@ class __$$ContactModelImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$ContactModelImpl implements _ContactModel {
   const _$ContactModelImpl(
       {required this.id,
@@ -199,9 +194,6 @@ class _$ContactModelImpl implements _ContactModel {
       this.notes,
       required this.createdAt,
       required this.updatedAt});
-
-  factory _$ContactModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ContactModelImplFromJson(json);
 
   @override
   final String id;
@@ -243,7 +235,6 @@ class _$ContactModelImpl implements _ContactModel {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, name, phoneNumber, email,
       address, notes, createdAt, updatedAt);
@@ -253,13 +244,6 @@ class _$ContactModelImpl implements _ContactModel {
   @pragma('vm:prefer-inline')
   _$$ContactModelImplCopyWith<_$ContactModelImpl> get copyWith =>
       __$$ContactModelImplCopyWithImpl<_$ContactModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ContactModelImplToJson(
-      this,
-    );
-  }
 }
 
 abstract class _ContactModel implements ContactModel {
@@ -272,9 +256,6 @@ abstract class _ContactModel implements ContactModel {
       final String? notes,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$ContactModelImpl;
-
-  factory _ContactModel.fromJson(Map<String, dynamic> json) =
-      _$ContactModelImpl.fromJson;
 
   @override
   String get id;

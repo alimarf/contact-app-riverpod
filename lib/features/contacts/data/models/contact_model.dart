@@ -4,6 +4,7 @@ import '../../domain/entities/contact_entity.dart';
 part 'contact_model.freezed.dart';
 part 'contact_model.g.dart';
 
+@JsonSerializable(explicitToJson: true)
 @freezed
 class ContactModel with _$ContactModel {
   const factory ContactModel({
@@ -55,3 +56,7 @@ extension ContactModelX on ContactModel {
         updatedAt: updatedAt,
       );
 } 
+
+extension ContactModelJson on ContactModel {
+  Map<String, dynamic> toJson() => _$ContactModelToJson(this);
+}
