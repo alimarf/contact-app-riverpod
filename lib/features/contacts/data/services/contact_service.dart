@@ -50,10 +50,12 @@ class ContactService {
 
   Future<ContactEntity> updateContact(ContactEntity contact) async {
     try {
-      final model = ContactModel.fromEntity(contact);
       final response = await _dioClient.dio.put(
         '/contacts/${contact.id}',
-        data: model.toJson(),
+        data: {
+          'name': contact.name,
+          'phone': contact.phoneNumber,
+        },
       );
       return ContactModel.fromJson(response.data).toEntity();
     } catch (e) {

@@ -10,6 +10,9 @@ final contactNotifierProvider = StateNotifierProvider<ContactNotifier, AsyncValu
 
 class ContactNotifier extends StateNotifier<AsyncValue<List<ContactEntity>>> {
   final ContactService _contactService;
+  String? _lastAction;
+  String? get lastAction => _lastAction;
+  void clearLastAction() => _lastAction = null;
 
   ContactNotifier(this._contactService) : super(const AsyncValue.loading());
 
@@ -24,6 +27,7 @@ class ContactNotifier extends StateNotifier<AsyncValue<List<ContactEntity>>> {
   }
 
   Future<void> deleteContact(String id) async {
+    _lastAction = 'delete';
     try {
       await _contactService.deleteContact(id);
       state.whenData((contacts) {

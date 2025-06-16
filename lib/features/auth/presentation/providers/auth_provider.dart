@@ -9,8 +9,9 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/services/auth_api_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../../../core/network/dio_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-final dioClientProvider = Provider<DioClient>((ref) {
+final dioClientProvider = Provider.autoDispose<DioClient>((ref) {
   final authService = ref.watch(authServiceProvider);
   return DioClient(authService);
 });
@@ -25,7 +26,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(apiService);
 });
 
-final authServiceProvider = Provider<AuthService>((ref) {
+final authServiceProvider = Provider.autoDispose<AuthService>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return AuthService(prefs);
 });
@@ -98,9 +99,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
       );
       final authService = ref.read(authServiceProvider);
+      print('AuthNotifier: Saving token after login: ${user.token}');
       await authService.saveToken(user.token);
+      // Print all SharedPreferences keys/values
+      final prefs = await SharedPreferences.getInstance();
+      print('All SharedPreferences after login:');
+      for (var key in prefs.getKeys()) {
+        print('[33m$key: ${prefs.get(key)}[0m');
+      }
       state = state.copyWith(isLoading: false, user: user);
     } catch (e) {
+      final authService = ref.read(authServiceProvider);
+      await authService.removeToken(); // Clear token on error
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -113,6 +123,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     final authService = ref.read(authServiceProvider);
     await authService.removeToken();
+    ref.invalidate(authServiceProvider);
+    ref.invalidate(dioClientProvider);
     state = AuthState.initial();
   }
 }

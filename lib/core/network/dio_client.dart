@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
 import 'dart:io' show Platform;
 import '../../features/auth/data/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DioClient {
   late final Dio _dio;
@@ -92,9 +93,12 @@ class DioClient {
     // Add auth token interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
-          final token = _authService.getToken();
-          if (token != null) {
+        onRequest: (options, handler) async {
+          // Always get the latest token from SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('auth_token');
+          print('DioClient: Token from SharedPreferences: $token');
+          if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
             print('DioClient: Adding token to request: Bearer $token'); // Debug print
           } else {

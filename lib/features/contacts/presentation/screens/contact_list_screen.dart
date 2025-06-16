@@ -24,6 +24,20 @@ class _ContactListScreenState extends ConsumerState<ContactListScreen> {
   Widget build(BuildContext context) {
     final contactsState = ref.watch(contactNotifierProvider);
 
+    ref.listen<AsyncValue<List<ContactEntity>>>(contactNotifierProvider, (previous, next) {
+      final notifier = ref.read(contactNotifierProvider.notifier);
+      if (notifier.lastAction == 'delete' && previous is AsyncLoading && next is AsyncData) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contact deleted successfully.')),
+        );
+        notifier.clearLastAction();
+      } else if (next is AsyncError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete contact: ${next.error}')),
+        );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contacts'),
@@ -31,10 +45,29 @@ class _ContactListScreenState extends ConsumerState<ContactListScreen> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              final authService = ref.read(authServiceProvider);
-              await authService.removeToken();
-              if (mounted) {
-                context.go('/login');
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Logout'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                final authService = ref.read(authServiceProvider);
+                await authService.removeToken();
+                if (mounted) {
+                  context.go('/login');
+                }
               }
             },
           ),
@@ -80,11 +113,42 @@ class _ContactListScreenState extends ConsumerState<ContactListScreen> {
           ),
           title: Text(contact.name),
           subtitle: Text(contact.phoneNumber),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () {
-              ref.read(contactNotifierProvider.notifier).deleteContact(contact.id);
-            },
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () async {
+                 await context.push('/edit-contact/${contact.id}');
+                 ref.read(contactNotifierProvider.notifier).loadContacts();
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Contact'),
+                      content: const Text('Are you sure you want to delete this contact?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    ref.read(contactNotifierProvider.notifier).deleteContact(contact.id);
+                  }
+                },
+              ),
+            ],
           ),
           onTap: () {
             context.push('/edit-contact/${contact.id}');

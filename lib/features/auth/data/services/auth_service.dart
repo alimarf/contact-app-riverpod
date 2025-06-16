@@ -8,10 +8,13 @@ class AuthService {
 
   Future<void> saveToken(String token) async {
     await _prefs.setString(_tokenKey, token);
+    print('AuthService: Saved token: $token');
   }
 
   String? getToken() {
-    return _prefs.getString(_tokenKey);
+    final token = _prefs.getString(_tokenKey);
+    print('AuthService: getToken() -> $token');
+    return token;
   }
 
   Future<void> removeToken() async {

@@ -8,16 +8,18 @@ import '../../features/contacts/presentation/screens/contact_list_screen.dart';
 import '../../features/contacts/presentation/screens/create_contact_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/contacts/presentation/screens/edit_contact_screen.dart';
+import '../../features/auth/presentation/screens/signup_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-final appRouterProvider = Provider<GoRouter>((ref) {
+final appRouterProvider = Provider.family<GoRouter, VoidCallback?>((ref, onRestart) {
   return GoRouter(
     initialLocation: '/login',
     routes: [
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => LoginScreen(onRestart: onRestart),
       ),
       GoRoute(
         path: '/contacts',
@@ -26,6 +28,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/create-contact',
         builder: (context, state) => const CreateContactScreen(),
+      ),
+      GoRoute(
+        path: '/edit-contact/:id',
+        builder: (context, state) => EditContactScreen(contactId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupScreen(),
       ),
     ],
   );

@@ -1,45 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/auth_provider.dart' show authProvider;
-import '../providers/auth_providers.dart' show authServiceProvider;
+import '../providers/auth_provider.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onRestart;
-  const LoginScreen({super.key, this.onRestart});
+class SignupScreen extends ConsumerStatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    // If token exists, navigate to /contacts
-    Future.microtask(() {
-      final authService = ref.read(authServiceProvider);
-      final token = authService.getToken();
-      if (token != null && token.isNotEmpty) {
-        context.go('/contacts');
-      }
-    });
-  }
-
-  @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _login() {
+  void _signup() {
     if (_formKey.currentState!.validate()) {
-      ref.read(authProvider.notifier).login(
+      ref.read(authProvider.notifier).signup(
+        name: _nameController.text,
         email: _emailController.text,
         password: _passwordController.text,
       );
@@ -50,7 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    // Listen for login success or error
+    // Listen for signup success or error
     ref.listen(authProvider, (previous, next) {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,14 +46,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
       if (next.error == null && next.user != null) {
-        if (widget.onRestart != null) widget.onRestart!();
         context.go('/contacts');
       }
     });
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Sign Up'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -74,6 +61,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -84,6 +85,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
+                  }
+                  if (!value.contains('@')) {
+                    return 'Please enter a valid email';
                   }
                   return null;
                 },
@@ -100,22 +104,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: authState.isLoading ? null : _login,
+                onPressed: authState.isLoading ? null : _signup,
                 child: authState.isLoading
                     ? const CircularProgressIndicator()
-                    : const Text('Login'),
+                    : const Text('Sign Up'),
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  context.go('/signup');
+                  context.go('/login');
                 },
-                child: const Text("Don't have an account? Sign up"),
+                child: const Text('Already have an account? Log in'),
               ),
             ],
           ),
