@@ -8,18 +8,31 @@ A modern contact management application built with Flutter and Riverpod state ma
   - User signup and login
   - Secure token-based authentication
   - Persistent login state
+  - Automatic session management
 
 - **Contact Management**
-  - View list of contacts
-  - Create new contacts
-  - Edit existing contacts
-  - Delete contacts
-  - Contact details include name, phone number, email, address, and notes
+  - View list of contacts with beautiful cards
+  - Create new contacts with validation
+  - Edit existing contacts with real-time updates
+  - Delete contacts with confirmation
+  - Contact details include:
+    - Name
+    - Phone number
+    - Email
+    - Address
+    - Notes
+    - Creation/update timestamps
+  - Search functionality across all contact fields
+  - Pull-to-refresh for updating contact list
+  - Empty state UI for better user experience
 
-- **Modern UI**
-  - Material Design 3
-  - Responsive layout
-  - Smooth animations
+- **Modern UI/UX**
+  - Material Design 3 with custom theming
+  - Responsive layout for all screen sizes
+  - Smooth animations and transitions
+  - Intuitive navigation flow
+  - Loading and error states
+  - Confirmation dialogs for destructive actions
 
 ## Project Structure
 
@@ -78,21 +91,80 @@ The app follows Clean Architecture principles with three main layers:
 
 The app uses Riverpod for state management with the following components:
 
-- **StateNotifierProvider**: For complex state management
-- **Provider**: For simple dependencies
-- **FutureProvider**: For async operations
+- **StateNotifierProvider**: For complex state management (Contacts, Auth)
+- **Provider**: For simple dependencies and services
+- **FutureProvider**: For async operations and data fetching
+- **ChangeNotifierProvider**: For local UI state management
+- **StreamProvider**: For real-time data updates
+
+### Key State Management Features:
+- Centralized state management with Riverpod
+- Reactive UI updates with minimal boilerplate
+- Proper error handling and loading states
+- Efficient state updates with immutable data
+- Easy dependency injection for testing
 
 ## Dependencies
 
 Key packages used in this project:
 
-- **flutter_riverpod**: State management
-- **go_router**: Navigation
-- **dio**: HTTP client
-- **freezed**: Immutable models
-- **dartz**: Functional programming
-- **shared_preferences**: Local storage
-- **hive**: NoSQL database
+- **Core**
+  - flutter_riverpod: ^2.4.9 - State management
+  - go_router: ^13.0.0 - Declarative routing
+  - dio: ^5.4.0 - HTTP client
+  - freezed_annotation: ^2.4.1 - Immutable models
+  - json_annotation: ^4.8.1 - JSON serialization
+
+- **State & Data**
+  - riverpod_annotation: ^2.4.0 - Riverpod code generation
+  - shared_preferences: ^2.2.2 - Local storage
+  - hive: ^2.2.3 - NoSQL database
+  - hive_flutter: ^1.1.0 - Flutter bindings for Hive
+
+- **UI & Utilities**
+  - flutter_animate: ^4.2.0 - Beautiful animations
+  - intl: ^0.19.0 - Internationalization
+  - flutter_screenutil: ^5.9.0 - Responsive UI
+  - flutter_svg: ^2.0.9 - SVG image support
+
+- **Development**
+  - build_runner: ^2.4.6 - Code generation
+  - freezed: ^2.4.5 - Code generation for immutable classes
+  - json_serializable: ^6.7.1 - JSON serialization
+
+## Key Features in Detail
+
+### Authentication Flow
+- Secure token-based authentication
+- Automatic token refresh
+- Protected routes
+- Session persistence
+- Error handling for authentication failures
+
+### Contact Management
+- **CRUD Operations**
+  - Create contacts with validation
+  - Read contacts with search and filtering
+  - Update contacts with optimistic UI updates
+  - Delete contacts with confirmation
+
+- **Search & Filter**
+  - Real-time search across all contact fields
+  - Case-insensitive matching
+  - Clear search functionality
+
+- **UI/UX**
+  - Pull-to-refresh for manual updates
+  - Empty state illustrations
+  - Loading indicators
+  - Error states with retry options
+  - Confirmation dialogs for destructive actions
+
+### Performance Optimizations
+- Efficient list rendering with ListView.builder
+- Proper widget disposal
+- Memory management
+- Optimized rebuilds with Riverpod
 
 ## Getting Started
 

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../auth_repository.dart';
-import '../auth_entity.dart';
+import '../repositories/auth_repository.dart';
+import '../entities/auth_entity.dart';
 import '../../../../core/error/failures.dart';
 
 class SignupUseCase {
@@ -8,7 +8,11 @@ class SignupUseCase {
 
   SignupUseCase(this.repository);
 
-  Future<Either<Failure, AuthEntity>> call(String email, String password) {
-    return repository.signup(email, password);
+  Future<Either<Failure, AuthEntity>> call({
+    required String name,
+    required String email,
+    required String password,
+  }) {
+    return repository.signup(name: name, email: email, password: password);
   }
-} 
+}

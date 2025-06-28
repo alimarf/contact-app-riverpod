@@ -55,6 +55,9 @@ class ContactService {
         data: {
           'name': contact.name,
           'phone': contact.phoneNumber,
+          'email': contact.email,
+          'address': contact.address,
+          'notes': contact.notes,
         },
       );
       return ContactModel.fromJson(response.data).toEntity();
